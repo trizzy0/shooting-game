@@ -1,0 +1,120 @@
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+// Create player object
+const player = {
+  x: canvas.width / 2,
+  y: canvas.height - 30,
+  radius: 20,
+  color: '#00FF00',
+  speed: 5,
+  moveLeft: false,
+  moveRight: false,
+  shoot: false
+};
+
+// Create bullet array
+const bullets = [];
+
+// Event listeners for player movement and shooting
+document.addEventListener('keydown', function(event) {
+  if (event.keyCode === 37) {
+    player.moveLeft = true;
+  } else if (event.keyCode === 39) {
+    player.moveRight = true;
+  } else if (event.keyCode === 32) {
+    player.shoot = true;
+  }
+});
+
+document.addEventListener('keyup', function(event) {
+  if (event.keyCode === 37) {
+    player.moveLeft = false;
+  } else if (event.keyCode === 39) {
+    player.moveRight = false;
+  } else if (event.keyCode === 32) {
+    player.shoot = false;
+  }
+});
+
+// Function to draw the player object
+function drawPlayer() {
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2, false);
+  ctx.fillStyle = player.color;
+  ctx.fill();
+  ctx.closePath();
+}
+
+// Function to move the player object
+function movePlayer() {
+  if (player.moveLeft && player.x > player.radius) {
+    player.x -= player.speed;
+  } else if (player.moveRight && player.x < canvas.width - player.radius) {
+    player.x += player.speed;
+  }
+}
+
+// Function to draw the bullet objects
+function drawBullets() {
+  bullets.forEach(function(bullet) {
+    ctx.beginPath();
+    ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2, false);
+    ctx.fillStyle = bullet.color;
+    ctx.fill();
+    ctx.closePath();
+  });
+}
+
+// Function to move the bullet objects
+function moveBullets() {
+  bullets.forEach(function(bullet) {
+    bullet.y -= bullet.speed;
+  });
+}
+
+// Function to remove bullets that go off screen
+function removeBullets() {
+  bullets.forEach(function(bullet, index) {
+    if (bullet.y < -bullet.radius) {
+      bullets.splice(index, 1);
+    }
+  });
+}
+
+// Function to check for bullet collisions with enemy objects
+function checkCollisions() {
+  bullets.forEach(function(bullet, bulletIndex) {
+    enemies.forEach(function(enemy, enemyIndex) {
+      const distance = Math.sqrt(Math.pow(bullet.x - enemy.x, 2) + Math.pow(bullet.y - enemy.y, 2));
+      if (distance < bullet.radius + enemy.radius) {
+        bullets.splice(bulletIndex, 1);
+        enemies.splice(enemyIndex, 1);
+      }
+    });
+  });
+}
+
+// Main game loop
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawPlayer();
+  movePlayer();
+  if (player.shoot) {
+    bullets.push({
+      x: player.x,
+      y: player.y - player.radius,
+      radius: 5,
+      color: '#FF0000',
+      speed: 10
+    });
+  }
+  drawBullets();
+  moveBullets();
+  removeBullets();
+  checkCollisions();
+  requestAnimationFrame(gameLoop);
+}
+
+// Start game loop
+gameLoop();
